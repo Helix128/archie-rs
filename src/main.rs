@@ -46,22 +46,16 @@ fn main() {
         Command::Task(task_command) => {
             match task_command {
                 TaskCommands::Set { name, commands } => {
-                    if let Err(e) = task::set_task(name, commands) {
-                        eprintln!("Error setting task: {}", e);
-                    }
+                    task::set_task(name, commands);
                 }
                 TaskCommands::Delete { name } => {
-                    if let Err(e) = task::delete_task(name) {
-                        eprintln!("Error deleting task: {}", e);
-                    }
+                    task::delete_task(name);
                 }
                 TaskCommands::List => {
                     task::list_tasks();
                 }
                 TaskCommands::Run { name } => {
-                    if let Err(e) = task::run_task(name) {
-                        eprintln!("Error running task: {}", e);
-                    }
+                    task::run_task(name);
                 }
                 TaskCommands::Locate => {
                     match task::locate_tasks() {
@@ -72,9 +66,7 @@ fn main() {
             }
         }
         Command::Pls { task } => {
-                if let Err(e) = task::run_task(task) {
-                    eprintln!("Error running task: {}", e);
-                }
+                task::run_task(task);
             }
         Command::System(system_command) => {
             match system_command {

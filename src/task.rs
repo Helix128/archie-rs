@@ -34,9 +34,23 @@ pub struct Task {
 }
 
 pub fn load_tasks() -> Result<Vec<Task>, Box<dyn std::error::Error>> {
-    let data = fs::read_to_string("tasks.json")?;
-    let tasks = serde_json::from_str(&data)?;
-    Ok(tasks)
+    let data = fs::read_to_string("tasks.json");
+    
+    match data {
+        Ok(content) => {
+            let tasks = serde_json::from_str(&content)?;
+            Ok(tasks)
+        }
+        Err(e) => {
+            if e.kind() == std::io::ErrorKind::NotFound {
+                let empty_tasks = Vec::new();
+                save_tasks(&empty_tasks)?;
+                Ok(empty_tasks)
+            } else {
+                Err(Box::new(e))
+            }
+        }
+    }
 }
 
 pub fn save_tasks(tasks: &Vec<Task>) -> Result<(), Box<dyn std::error::Error>> {
@@ -67,7 +81,7 @@ pub fn set_task(name: String, command_str: Vec<String>) -> Result<(), Box<dyn st
         let mut input = String::new();
         std::io::stdin().read_line(&mut input)?;
         if !input.trim().eq_ignore_ascii_case("y") {
-            println!("Task creation cancelled.");
+            println!("Task overwrite cancelled.");
             return Ok(());
         }
         tasks.retain(|task| task.name != name);
@@ -95,15 +109,20 @@ pub fn list_tasks(){
         Err(e) => {
             if let Some(io_err) = e.downcast_ref::<std::io::Error>() {
                 if io_err.kind() == std::io::ErrorKind::NotFound {
-                    eprintln!("{} Use {} to create a task.", "No tasks found.".red(), "task create".bold());
+                    eprintln!("{} Use {} to create a task.", "No tasks found.".red(), "task set".bold());
                     return;
                 }
             }
-            eprintln!("Error loading tasks: {}", e);
             return;
         }
     };
+    
     println!("{}:", "Tasks".bold().underline());
+
+    if tasks.is_empty() {
+        println!("{} Use {} to create a task.", "No tasks found.".red(), "task set".bold());
+        return;
+    }
     tasks.sort_by(|a, b| a.name.cmp(&b.name));
     for task in tasks {
         println!("{}:", task.name.bold());
@@ -115,15 +134,17 @@ pub fn list_tasks(){
 
 pub fn run_task(name: String) -> Result<(), Box<dyn std::error::Error>> {
     let tasks = load_tasks()?;
-    let task = tasks.iter().find(|t| t.name == name)
-        .ok_or_else(|| std::io::Error::new(
-            std::io::ErrorKind::NotFound,
-            format!("Task not found: {}", name)
-        ))?;
-    
-    println!("Running task '{}'", task.name.bold());
+    if let Some(task) = tasks.into_iter().find(|task| task.name == name) {
+        execute_task(&task)?;
+    } else {
+        eprintln!("{} {}", "Task not found:".red(), name.bold());
+    }
+    Ok(())
+}
+
+pub fn execute_task(task: &Task) -> std::io::Result<()> {
     for command in &task.commands {
-        println!("> {}", command.cyan().bold());
+        println!("{} {}", "Executing:".blue(), command.cyan().bold());
         execute_command(command)?;
     }
     Ok(())
