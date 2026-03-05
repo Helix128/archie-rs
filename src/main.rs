@@ -50,24 +50,34 @@ fn main() {
     match args.command {
         Command::Task(task_command) => match task_command {
             TaskCommands::Set { name, commands } => {
-                task::set_task(name, commands);
+                if let Err(e) = task::set_task(name, commands) {
+                    eprintln!("{} {}", "Error:".red().bold(), e);
+                }
             }
             TaskCommands::Delete { name } => {
-                task::delete_task(name);
+                if let Err(e) = task::delete_task(name) {
+                    eprintln!("{} {}", "Error:".red().bold(), e);
+                }
             }
             TaskCommands::List => {
-                task::list_tasks();
+                if let Err(e) = task::list_tasks() {
+                    eprintln!("{} {}", "Error:".red().bold(), e);
+                }
             }
             TaskCommands::Run { name } => {
-                task::run_task(name);
+                if let Err(e) = task::run_task(name) {
+                    eprintln!("{} {}", "Error:".red().bold(), e);
+                }
             }
             TaskCommands::Locate => match task::locate_tasks() {
-                Ok(path) => println!("Tasks file location: {}", path),
-                Err(e) => eprintln!("Error locating tasks file: {}", e),
+                Ok(path) => println!("{} {}", "Tasks file:".bold(), path.cyan()),
+                Err(e) => eprintln!("{} {}", "Error:".red().bold(), e),
             },
         },
         Command::Pls { task } => {
-            task::run_task(task);
+            if let Err(e) = task::run_task(task) {
+                eprintln!("{} {}", "Error:".red().bold(), e);
+            }
         }
         Command::System(system_command) => match system_command {
             SystemCommands::Disks => {

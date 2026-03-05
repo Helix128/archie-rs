@@ -53,20 +53,7 @@ pub fn save_tasks(tasks: &Vec<Task>) -> Result<(), Box<dyn std::error::Error>> {
 }
 
 pub fn set_task(name: String, command_str: Vec<String>) -> Result<(), Box<dyn std::error::Error>> {
-    let mut tasks = match load_tasks() {
-        Ok(tasks) => tasks,
-        Err(e) => {
-            if let Some(io_err) = e.downcast_ref::<std::io::Error>() {
-                if io_err.kind() == std::io::ErrorKind::NotFound {
-                    Vec::new()
-                } else {
-                    return Err(e);
-                }
-            } else {
-                return Err(e);
-            }
-        }
-    };
+    let mut tasks = load_tasks()?;
 
     if tasks.iter().any(|task| task.name == name) {
         println!("{} {}", "Task already exists:".yellow(), name.bold());
@@ -104,34 +91,19 @@ pub fn delete_task(name: String) -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-pub fn list_tasks() {
-    let mut tasks = match load_tasks() {
-        Ok(tasks) => tasks,
-        Err(e) => {
-            if let Some(io_err) = e.downcast_ref::<std::io::Error>() {
-                if io_err.kind() == std::io::ErrorKind::NotFound {
-                    eprintln!(
-                        "{} Use {} to create a task.",
-                        "No tasks found.".red(),
-                        "task set".bold()
-                    );
-                    return;
-                }
-            }
-            return;
-        }
-    };
-
-    println!("{}:", "Tasks".bold().underline());
+pub fn list_tasks() -> Result<(), Box<dyn std::error::Error>> {
+    let mut tasks = load_tasks()?;
 
     if tasks.is_empty() {
         println!(
             "{} Use {} to create a task.",
-            "No tasks found.".red(),
+            "No tasks found.".yellow(),
             "task set".bold()
         );
-        return;
+        return Ok(());
     }
+
+    println!("{}:", "Tasks".bold().underline());
     tasks.sort_by(|a, b| a.name.cmp(&b.name));
     for task in tasks {
         println!("{}:", task.name.bold());
@@ -139,14 +111,14 @@ pub fn list_tasks() {
             println!("  - {}", command.cyan().bold());
         }
     }
+    Ok(())
 }
 
 pub fn run_task(name: String) -> Result<(), Box<dyn std::error::Error>> {
     let tasks = load_tasks()?;
-    if let Some(task) = tasks.into_iter().find(|task| task.name == name) {
-        execute_task(&task)?;
-    } else {
-        eprintln!("{} {}", "Task not found:".red(), name.bold());
+    match tasks.into_iter().find(|task| task.name == name) {
+        Some(task) => execute_task(&task)?,
+        None => return Err(format!("Task '{}' not found.", name).into()),
     }
     Ok(())
 }
