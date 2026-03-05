@@ -1,5 +1,5 @@
 # archie-rs
-## Rust implementation of [Archie](https://github.com/Helix128/archie).
+## Rust implementation of [archie](https://github.com/Helix128/archie).
 
 ### Compatibility
 This version introduces breaking changes compared to the Python version. While the task system remains the same, the rest of the modules are being rewritten from the ground up.
