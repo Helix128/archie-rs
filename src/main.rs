@@ -33,7 +33,7 @@ fn about() {
     let version = env!("CARGO_PKG_VERSION");
     let author = env!("CARGO_PKG_AUTHORS");
     println!(
-        "{} {}, made with love by {}",
+        "{} {} by {}",
         "archie-rs".cyan().bold(),
         version,
         author.purple()
