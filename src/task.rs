@@ -135,7 +135,23 @@ fn execute_command(cmd_str: &str) -> std::io::Result<()> {
     let output = if cfg!(target_os = "windows") {
         Command::new("cmd").args(["/C", cmd_str]).output()?
     } else {
-        Command::new("sh").args(["-c", cmd_str]).output()?
+        let needs_sudo = cmd_str.trim_start().starts_with("sudo ");
+        if needs_sudo {
+            let cmd_without_sudo = cmd_str.trim_start().trim_start_matches("sudo").trim();
+            Command::new("sudo")
+                .args(["-S", "sh", "-c", cmd_without_sudo])
+                .stdin(std::process::Stdio::inherit())
+                .stdout(std::process::Stdio::inherit())
+                .stderr(std::process::Stdio::inherit())
+                .output()?
+        } else {
+            Command::new("sh")
+                .args(["-c", cmd_str])
+                .stdin(std::process::Stdio::inherit())
+                .stdout(std::process::Stdio::inherit())
+                .stderr(std::process::Stdio::inherit())
+                .output()?
+        }
     };
 
     if output.status.success() {
