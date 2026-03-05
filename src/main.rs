@@ -25,9 +25,9 @@ fn main() {
     match args.command {
         Command::Task(task_command) => {
             match task_command {
-                TaskCommands::Create { name, commands } => {
-                    if let Err(e) = task::create_task(name, commands) {
-                        eprintln!("Error creating task: {}", e);
+                TaskCommands::Set { name, commands } => {
+                    if let Err(e) = task::set_task(name, commands) {
+                        eprintln!("Error setting task: {}", e);
                     }
                 }
                 TaskCommands::Delete { name } => {
@@ -41,6 +41,12 @@ fn main() {
                 TaskCommands::Run { name } => {
                     if let Err(e) = task::run_task(name) {
                         eprintln!("Error running task: {}", e);
+                    }
+                }
+                TaskCommands::Locate => {
+                    match task::locate_tasks() {
+                        Ok(path) => println!("Tasks file location: {}", path),
+                        Err(e) => eprintln!("Error locating tasks file: {}", e),
                     }
                 }
             }

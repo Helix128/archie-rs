@@ -4,10 +4,12 @@ use serde::{Serialize, Deserialize};
 use clap::Subcommand;
 use colored::Colorize;
 
+const TASKS_FILE: &str = "tasks.json";
+
 #[derive(Subcommand)]
 pub enum TaskCommands{
-    #[clap(name = "create", about = "Create a new task.")]
-    Create{
+    #[clap(name = "set", about = "Update an existing task or create a new one.")]
+    Set{
         name: String,
         commands: Vec<String>,
     },
@@ -20,7 +22,9 @@ pub enum TaskCommands{
     #[clap(name = "run", about = "Run a task.")]
     Run{
         name: String,
-    }
+    },
+    #[clap(name= "locate", about = "Show the location of the tasks file.")]
+    Locate
 }
 
 #[derive(Serialize, Deserialize)]
@@ -41,7 +45,7 @@ pub fn save_tasks(tasks: &Vec<Task>) -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-pub fn create_task(name: String, command_str: Vec<String>) -> Result<(), Box<dyn std::error::Error>> {
+pub fn set_task(name: String, command_str: Vec<String>) -> Result<(), Box<dyn std::error::Error>> {
     let mut tasks = match load_tasks() {
         Ok(tasks) => tasks,
         Err(e) => {
@@ -58,10 +62,15 @@ pub fn create_task(name: String, command_str: Vec<String>) -> Result<(), Box<dyn
     };
 
     if tasks.iter().any(|task| task.name == name) {
-        return Err(Box::new(std::io::Error::new(
-            std::io::ErrorKind::AlreadyExists,
-            format!("{} {}", "Task already exists:".yellow(), name.bold())
-        )));
+        println!("{} {}", "Task already exists:".yellow(), name.bold());
+        println!("Do you want to overwrite it? (y/n)");
+        let mut input = String::new();
+        std::io::stdin().read_line(&mut input)?;
+        if !input.trim().eq_ignore_ascii_case("y") {
+            println!("Task creation cancelled.");
+            return Ok(());
+        }
+        tasks.retain(|task| task.name != name);
     }
     let commands = command_str.into_iter().map(|s| s.trim().to_string()).collect();
     let task = Task { name, commands };
@@ -138,4 +147,10 @@ fn execute_command(cmd_str: &str) -> std::io::Result<()> {
     }
 
     Ok(())
+}
+
+pub fn locate_tasks() -> Result<String, Box<dyn std::error::Error>> {
+    let current_dir = std::env::current_dir()?;
+    let task_file_path = current_dir.join(TASKS_FILE);
+    Ok(task_file_path.to_string_lossy().to_string())
 }
