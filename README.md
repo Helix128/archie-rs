@@ -7,4 +7,4 @@ Archie is a command line tool with multiple features aimed at making it easier t
 # Features
 - [x] User defined tasks
 - [ ] Environment variable management
-- [ ] Disk info visualization
+- [ ] System info modules (disk, etc)
