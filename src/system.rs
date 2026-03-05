@@ -3,9 +3,9 @@ use colored::Colorize;
 use sysinfo::{Component, Disk, Disks, System};
 
 #[derive(Subcommand)]
-pub enum SystemCommands{
+pub enum SystemCommands {
     #[clap(name = "disks", about = "View space of all installed disks.")]
-    Disks
+    Disks,
 }
 
 pub fn format_bytes(bytes: u64) -> String {
@@ -23,7 +23,7 @@ pub fn format_bytes(bytes: u64) -> String {
 
 pub fn list_disks() {
     let disks = Disks::new_with_refreshed_list();
-    
+
     println!("{}", "Disks:".bold().underline());
     println!("");
     for disk in disks.list() {
@@ -43,10 +43,20 @@ pub fn list_disks() {
         if display_name.is_empty() {
             println!("{} [{}]", letter.display().to_string().bold().cyan(), kind);
         } else {
-            println!("{} '{}' [{}]", letter.display().to_string().bold().cyan(), display_name.bold().cyan(), kind);
+            println!(
+                "{} '{}' [{}]",
+                letter.display().to_string().bold().cyan(),
+                display_name.bold().cyan(),
+                kind
+            );
         }
         println!("{} {}", "- Total space:".bold(), total_str);
-        println!("{} {} ({:.2}%)", "- Available space:".bold(), available_str, available_pct);
+        println!(
+            "{} {} ({:.2}%)",
+            "- Available space:".bold(),
+            available_str,
+            available_pct
+        );
 
         const BAR_WIDTH: usize = 32;
         let used_pct = if total_space > 0 {

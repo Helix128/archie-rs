@@ -1,30 +1,23 @@
-use std::fs;
-use std::process::Command;
-use serde::{Serialize, Deserialize};
 use clap::Subcommand;
 use colored::Colorize;
+use serde::{Deserialize, Serialize};
+use std::fs;
+use std::process::Command;
 
 const TASKS_FILE: &str = "tasks.json";
 
 #[derive(Subcommand)]
-pub enum TaskCommands{
+pub enum TaskCommands {
     #[clap(name = "set", about = "Update an existing task or create a new one.")]
-    Set{
-        name: String,
-        commands: Vec<String>,
-    },
+    Set { name: String, commands: Vec<String> },
     #[clap(name = "delete", about = "Delete an existing task.")]
-    Delete{
-        name: String,
-    },
+    Delete { name: String },
     #[clap(name = "list", about = "List all tasks.")]
     List,
     #[clap(name = "run", about = "Run a task.")]
-    Run{
-        name: String,
-    },
-    #[clap(name= "locate", about = "Show the location of the tasks file.")]
-    Locate
+    Run { name: String },
+    #[clap(name = "locate", about = "Show the location of the tasks file.")]
+    Locate,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -35,7 +28,7 @@ pub struct Task {
 
 pub fn load_tasks() -> Result<Vec<Task>, Box<dyn std::error::Error>> {
     let data = fs::read_to_string("tasks.json");
-    
+
     match data {
         Ok(content) => {
             let tasks = serde_json::from_str(&content)?;
@@ -86,12 +79,20 @@ pub fn set_task(name: String, command_str: Vec<String>) -> Result<(), Box<dyn st
         }
         tasks.retain(|task| task.name != name);
     }
-    let commands = command_str.into_iter().map(|s| s.trim().to_string()).collect();
+    let commands = command_str
+        .into_iter()
+        .map(|s| s.trim().to_string())
+        .collect();
     let task = Task { name, commands };
-    println!("Task {} ({}) created {}.", task.name.bold(), task.commands.join(" && ").cyan().bold(), "successfully".green());
+    println!(
+        "Task {} ({}) created {}.",
+        task.name.bold(),
+        task.commands.join(" && ").cyan().bold(),
+        "successfully".green()
+    );
     tasks.push(task);
     save_tasks(&tasks)?;
-    
+
     Ok(())
 }
 
@@ -99,28 +100,36 @@ pub fn delete_task(name: String) -> Result<(), Box<dyn std::error::Error>> {
     let mut tasks = load_tasks()?;
     tasks.retain(|task| task.name != name);
     save_tasks(&tasks)?;
-    println!("Task {} deleted successfully.", name);    
+    println!("Task {} deleted successfully.", name);
     Ok(())
 }
 
-pub fn list_tasks(){
+pub fn list_tasks() {
     let mut tasks = match load_tasks() {
         Ok(tasks) => tasks,
         Err(e) => {
             if let Some(io_err) = e.downcast_ref::<std::io::Error>() {
                 if io_err.kind() == std::io::ErrorKind::NotFound {
-                    eprintln!("{} Use {} to create a task.", "No tasks found.".red(), "task set".bold());
+                    eprintln!(
+                        "{} Use {} to create a task.",
+                        "No tasks found.".red(),
+                        "task set".bold()
+                    );
                     return;
                 }
             }
             return;
         }
     };
-    
+
     println!("{}:", "Tasks".bold().underline());
 
     if tasks.is_empty() {
-        println!("{} Use {} to create a task.", "No tasks found.".red(), "task set".bold());
+        println!(
+            "{} Use {} to create a task.",
+            "No tasks found.".red(),
+            "task set".bold()
+        );
         return;
     }
     tasks.sort_by(|a, b| a.name.cmp(&b.name));
@@ -152,13 +161,9 @@ pub fn execute_task(task: &Task) -> std::io::Result<()> {
 
 fn execute_command(cmd_str: &str) -> std::io::Result<()> {
     let output = if cfg!(target_os = "windows") {
-        Command::new("cmd")
-            .args(["/C", cmd_str])
-            .output()?
+        Command::new("cmd").args(["/C", cmd_str]).output()?
     } else {
-        Command::new("sh")
-            .args(["-c", cmd_str])
-            .output()?
+        Command::new("sh").args(["-c", cmd_str]).output()?
     };
 
     if output.status.success() {
