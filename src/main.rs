@@ -1,7 +1,12 @@
+use std::env;
 use clap::{Parser, Subcommand};
 
 mod task;
+use colored::Colorize;
 use task::TaskCommands;
+
+mod system;
+use system::SystemCommands;
 
 #[derive(Parser)]
 struct Args {
@@ -15,9 +20,24 @@ enum Command {
     Task(TaskCommands),
 
     #[clap(name = "pls", about = "Shortcut for 'task run'.")]
-    Pls { task: String }
+    Pls { task: String },
+
+    #[clap(subcommand, name = "system", about = "View system info.")]
+    System(SystemCommands),
+
+    #[clap(name = "about", about = "About archie.")]
+    About
 }
 
+fn about() {
+    let version = env!("CARGO_PKG_VERSION");
+    let author = env!("CARGO_PKG_AUTHORS");
+    println!("{} {}, made with love by {}","archie-rs".cyan().bold(), version, author.purple());
+    let homepage = env!("CARGO_PKG_HOMEPAGE");
+    if !homepage.is_empty() {
+        println!("{}: {}","Source".bold(), homepage.blue().underline());
+    }
+}
 
 fn main() {
     let args = Args::parse();
@@ -56,5 +76,15 @@ fn main() {
                     eprintln!("Error running task: {}", e);
                 }
             }
+        Command::System(system_command) => {
+            match system_command {
+                SystemCommands::Disks => {
+                    system::list_disks();
+                }
+            }
+        }
+        Command::About => {
+            about();
+        }
     }
 }
