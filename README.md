@@ -7,8 +7,12 @@ Archie is a command line tool with multiple features aimed at making it easier t
 # Features
 - [x] User defined tasks
 - [ ] Environment variable management
-- [ ] System info modules (disk, etc)
-
+- [ ] System info modules
+    - [x] Disks
+    - [ ] CPU
+    - [ ] GPU
+    - [ ] RAM
+    - [ ] Network
 
 # Example usage
 ```bash
@@ -38,5 +42,8 @@ archie pls "marco polo"
 
 # Find Archie task file (for sharing or manual edits)
 archie task locate
+
+# List disks and their info
+archie system disks
 
 ```
