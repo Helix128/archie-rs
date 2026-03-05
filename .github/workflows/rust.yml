@@ -1,0 +1,38 @@
+name: Rust
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    name: Release - ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        include:
+          - os: ubuntu-latest
+            artifact_name: archie-linux
+          - os: windows-latest
+            artifact_name: archie-windows
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Build Release
+      run: cargo build --release --verbose
+
+    - name: Upload Binary
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ matrix.artifact_name }}
+        path: |
+          target/release/archie
+          target/release/archie.exe
+        if-no-files-found: ignore
