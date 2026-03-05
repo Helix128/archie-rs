@@ -11,7 +11,7 @@ Archie is a command line tool with multiple features aimed at making it easier t
 - [x] User defined tasks
 - [ ] Environment variable management
 - [x] System info modules
-    - [x] Disks / Partitions
+    - [x] Disks / Partitions (partial functionality, W.I.P)
     - [ ] CPU
     - [ ] GPU
     - [ ] RAM
