@@ -2,9 +2,19 @@ use clap::Subcommand;
 use colored::Colorize;
 use serde::{Deserialize, Serialize};
 use std::fs;
+use directories::ProjectDirs;
 use std::process::Command;
 
-const TASKS_FILE: &str = "tasks.json";
+fn get_tasks_path() -> Result<String, Box<dyn std::error::Error>> {
+    if let Some(proj_dirs) = ProjectDirs::from("com", "archie", "archie-rs") {
+        let data_dir = proj_dirs.data_dir();
+        fs::create_dir_all(data_dir)?;
+        let task_file_path = data_dir.join("tasks.json");
+        Ok(task_file_path.to_string_lossy().to_string())
+    } else {
+        Err("Could not determine project directory.".into())
+    }
+}
 
 #[derive(Subcommand)]
 pub enum TaskCommands {
@@ -27,7 +37,8 @@ pub struct Task {
 }
 
 pub fn load_tasks() -> Result<Vec<Task>, Box<dyn std::error::Error>> {
-    let data = fs::read_to_string("tasks.json");
+    let tasks_file = get_tasks_path()?;
+    let data = fs::read_to_string(&tasks_file);
 
     match data {
         Ok(content) => {
@@ -47,8 +58,9 @@ pub fn load_tasks() -> Result<Vec<Task>, Box<dyn std::error::Error>> {
 }
 
 pub fn save_tasks(tasks: &Vec<Task>) -> Result<(), Box<dyn std::error::Error>> {
+    let tasks_file = get_tasks_path()?; 
     let data = serde_json::to_string_pretty(tasks)?;
-    fs::write("tasks.json", data)?;
+    fs::write(&tasks_file, data)?;
     Ok(())
 }
 
@@ -120,12 +132,13 @@ pub fn run_task(name: String) -> Result<(), Box<dyn std::error::Error>> {
         Some(task) => execute_task(&task)?,
         None => return Err(format!("Task '{}' not found.", name).into()),
     }
+    println!("Task {} done.", name.bold());
     Ok(())
 }
 
 pub fn execute_task(task: &Task) -> std::io::Result<()> {
     for command in &task.commands {
-        println!("{} {}", "Executing:".blue(), command.cyan().bold());
+        println!("{} {}", ">".blue(), command.cyan().bold());
         execute_command(command)?;
     }
     Ok(())
@@ -164,7 +177,6 @@ fn execute_command(cmd_str: &str) -> std::io::Result<()> {
 }
 
 pub fn locate_tasks() -> Result<String, Box<dyn std::error::Error>> {
-    let current_dir = std::env::current_dir()?;
-    let task_file_path = current_dir.join(TASKS_FILE);
-    Ok(task_file_path.to_string_lossy().to_string())
+    let task_file_path = get_tasks_path()?;
+    Ok(task_file_path.to_string())
 }
