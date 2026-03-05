@@ -1,5 +1,8 @@
 # archie-rs
-This is the Rust version of [Archie](https://github.com/Helix128/archie)
+## Rust implementation of [Archie](https://github.com/Helix128/archie).
+
+### Compatibility
+This version introduces breaking changes compared to the Python version. While the task system remains the same, the rest of the modules are being rewritten from the ground up.
 
 # About Archie
 Archie is a command line tool with multiple features aimed at making it easier to do repetitive tasks, managing environment variables and viewing sytem info.
@@ -7,7 +10,7 @@ Archie is a command line tool with multiple features aimed at making it easier t
 # Features
 - [x] User defined tasks
 - [ ] Environment variable management
-- [ ] System info modules
+- [x] System info modules
     - [x] Disks
     - [ ] CPU
     - [ ] GPU
