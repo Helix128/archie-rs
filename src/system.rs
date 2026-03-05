@@ -4,8 +4,8 @@ use sysinfo::{Component, Disk, Disks, System};
 
 #[derive(Subcommand)]
 pub enum SystemCommands {
-    #[clap(name = "disks", about = "View space of all installed disks.")]
-    Disks,
+    #[clap(name = "partitions", about = "View information about all mounted partitions.")]
+    Partitions,
 }
 
 pub fn format_bytes(bytes: u64) -> String {
@@ -21,10 +21,10 @@ pub fn format_bytes(bytes: u64) -> String {
     format!("{:.2} {}", size, UNITS[unit_index])
 }
 
-pub fn list_disks() {
+pub fn list_partitions() {
     let disks = Disks::new_with_refreshed_list();
 
-    println!("{}", "Disks:".bold().underline());
+    println!("{}", "Partitions:".bold().underline());
     println!("");
     for disk in disks.list() {
         let display_name = disk.name().to_string_lossy();

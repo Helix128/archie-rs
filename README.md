@@ -11,7 +11,7 @@ Archie is a command line tool with multiple features aimed at making it easier t
 - [x] User defined tasks
 - [ ] Environment variable management
 - [x] System info modules
-    - [x] Disks
+    - [x] Disks / Partitions
     - [ ] CPU
     - [ ] GPU
     - [ ] RAM
@@ -46,7 +46,7 @@ archie pls "marco polo"
 # Find Archie task file (for sharing or manual edits)
 archie task locate
 
-# List disks and their info
-archie system disks
+# List partitions and their info
+archie system partitions
 
 ```

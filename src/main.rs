@@ -80,8 +80,8 @@ fn main() {
             }
         }
         Command::System(system_command) => match system_command {
-            SystemCommands::Disks => {
-                system::list_disks();
+            SystemCommands::Partitions => {
+                system::list_partitions();
             }
         },
         Command::About => {
