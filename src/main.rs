@@ -8,6 +8,8 @@ use task::TaskCommands;
 mod system;
 use system::SystemCommands;
 
+mod ui;
+
 #[derive(Parser)]
 struct Args {
     #[clap(subcommand)]

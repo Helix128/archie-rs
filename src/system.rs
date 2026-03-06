@@ -2,6 +2,8 @@ use clap::Subcommand;
 use colored::Colorize;
 use sysinfo::{Component, Disk, Disks, System};
 
+use crate::ui;
+
 #[derive(Subcommand)]
 pub enum SystemCommands {
     #[clap(name = "partitions", about = "View information about all mounted partitions.")]
@@ -51,28 +53,20 @@ pub fn list_partitions() {
             );
         }
         println!("{} {}", "- Total space:".bold(), total_str);
+        let color = if available_pct >= 50.0 {
+            colored::Color::White
+        } else if available_pct >= 25.0 {
+            colored::Color::Yellow
+        } else {
+            colored::Color::Red
+        };
         println!(
             "{} {} ({:.2}%)",
             "- Available space:".bold(),
-            available_str,
-            available_pct
+            available_str.color(color),
+            available_pct.to_string()
         );
 
-        const BAR_WIDTH: usize = 32;
-        let used_pct = if total_space > 0 {
-            100.0 - available_pct
-        } else {
-            0.0
-        };
-        print!("[");
-        let bar_length = (used_pct / 100.0 * BAR_WIDTH as f64) as usize;
-        for _ in 0..bar_length {
-            print!("▰");
-        }
-        for _ in bar_length..BAR_WIDTH {
-            print!("▱");
-        }
-        println!("]");
-        println!("");
+        ui::fill_bar(available_pct,32, colored::Color::White, colored::Color::Cyan);
     }
 }
